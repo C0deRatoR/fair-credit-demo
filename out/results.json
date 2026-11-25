@@ -1,0 +1,166 @@
+{
+  "eda": {
+    "rows": 1000,
+    "columns": 20,
+    "missing_values": 0,
+    "duplicates": 0,
+    "default_rate": 0.3,
+    "sex_counts": {
+      "male": 690,
+      "female": 310
+    },
+    "default_rate_by_sex": {
+      "female": 0.352,
+      "male": 0.277
+    },
+    "features_after_encoding": 45
+  },
+  "split": {
+    "train": 600,
+    "validation": 200,
+    "test": 200
+  },
+  "optuna": {
+    "trials": 40,
+    "best_val_auc": 0.7617857142857142,
+    "best_params": {
+      "n_estimators": 54,
+      "learning_rate": 0.09807547499761822,
+      "max_depth": 5,
+      "subsample": 0.6183055330549129,
+      "min_samples_leaf": 17
+    },
+    "baseline_val_auc": 0.7305952380952381
+  },
+  "test": {
+    "logistic_regression": {
+      "accuracy": 0.76,
+      "precision": 0.6,
+      "recall": 0.6,
+      "f1": 0.6,
+      "auc": 0.784,
+      "ks": 0.514,
+      "brier": 0.168,
+      "dp_gap": 0.031,
+      "eo_gap": 0.15,
+      "confusion_matrix": [
+        [
+          116,
+          24
+        ],
+        [
+          24,
+          36
+        ]
+      ]
+    },
+    "gb_baseline": {
+      "accuracy": 0.755,
+      "precision": 0.6,
+      "recall": 0.55,
+      "f1": 0.574,
+      "auc": 0.764,
+      "ks": 0.455,
+      "brier": 0.171,
+      "dp_gap": 0.005,
+      "eo_gap": 0.15,
+      "confusion_matrix": [
+        [
+          118,
+          22
+        ],
+        [
+          27,
+          33
+        ]
+      ]
+    },
+    "gb_tuned": {
+      "accuracy": 0.765,
+      "precision": 0.618,
+      "recall": 0.567,
+      "f1": 0.591,
+      "auc": 0.775,
+      "ks": 0.438,
+      "brier": 0.168,
+      "dp_gap": 0.005,
+      "eo_gap": 0.05,
+      "confusion_matrix": [
+        [
+          119,
+          21
+        ],
+        [
+          26,
+          34
+        ]
+      ]
+    },
+    "gb_tuned_reweighed": {
+      "accuracy": 0.745,
+      "precision": 0.592,
+      "recall": 0.483,
+      "f1": 0.532,
+      "auc": 0.778,
+      "ks": 0.424,
+      "brier": 0.17,
+      "dp_gap": 0.048,
+      "eo_gap": 0.039,
+      "confusion_matrix": [
+        [
+          120,
+          20
+        ],
+        [
+          31,
+          29
+        ]
+      ]
+    },
+    "gb_tuned_reweighed_threshold": {
+      "accuracy": 0.74,
+      "precision": 0.605,
+      "recall": 0.383,
+      "f1": 0.469,
+      "auc": 0.778,
+      "ks": 0.424,
+      "brier": 0.17,
+      "dp_gap": 0.08,
+      "eo_gap": 0.09,
+      "confusion_matrix": [
+        [
+          125,
+          15
+        ],
+        [
+          37,
+          23
+        ]
+      ]
+    }
+  },
+  "validation": {
+    "logistic_regression": {
+      "accuracy": 0.67,
+      "precision": 0.444,
+      "recall": 0.4,
+      "f1": 0.421,
+      "auc": 0.732,
+      "ks": 0.417,
+      "brier": 0.194,
+      "dp_gap": 0.178,
+      "eo_gap": 0.254
+    },
+    "gradient_boosting_baseline": {
+      "accuracy": 0.71,
+      "precision": 0.52,
+      "recall": 0.433,
+      "f1": 0.473,
+      "auc": 0.731,
+      "ks": 0.436,
+      "brier": 0.196,
+      "dp_gap": 0.073,
+      "eo_gap": 0.058
+    }
+  }
+}
