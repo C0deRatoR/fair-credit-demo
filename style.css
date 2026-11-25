@@ -1,0 +1,144 @@
+/* Fair Credit: modernist look (off-white, near-black, one red, hard rules, square corners). */
+:root {
+  --paper: #f2f2f2;
+  --ink: #1a1a1a;
+  --muted: #4d4d4d;
+  --rule: #8a8a8a;
+  --red: #ee3216;       /* surfaces and large type */
+  --red-ink: #cc2a10;   /* small red text and button fills: 4.8:1 on paper, 5.4:1 with white */
+  --gutter: 24px;
+  --max: 1180px;
+  --font: "Archivo", "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Hide Streamlit chrome and default page padding. */
+header[data-testid="stHeader"],
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+#MainMenu,
+footer { display: none !important; }
+
+.stApp { background: var(--paper); }
+[data-testid="stMainBlockContainer"] { max-width: none; padding: 0 0 64px; }
+
+/* Page column: everything after the top bar sits in st.container(key="page"). */
+.st-key-page { max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); box-sizing: border-box; }
+
+.fc { font-family: var(--font); color: var(--ink); line-height: 1.5; }
+.fc *, .fc *::before, .fc *::after { box-sizing: border-box; }
+.fc h1, .fc h2, .fc h3, .fc p, .fc dl, .fc dd, .fc ol { margin: 0; padding: 0; }
+.fc h1, .fc h2, .fc h3 { font-family: var(--font); color: inherit; letter-spacing: -0.02em; }
+.fc a { color: inherit; }
+.fc a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* Top bar */
+.fc-top { border-bottom: 1px solid var(--rule); }
+.fc-top-inner { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.fc-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; text-decoration: none; letter-spacing: -0.01em; }
+.fc-logo { width: 14px; height: 14px; background: var(--red); }
+.fc-nav { display: flex; gap: 28px; height: 100%; }
+.fc-nav a { display: flex; align-items: center; height: 100%; font-size: 15px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.fc-nav a:hover { color: var(--red-ink); }
+.fc-nav a[aria-current="page"] { color: var(--red-ink); border-bottom-color: var(--red); }
+
+/* Type */
+.fc-eyebrow { color: var(--red-ink); font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.fc-hero { padding: 72px 0 32px; }
+.fc-hero h1 { margin-top: 16px; font-size: clamp(2.25rem, 0.5rem + 5.6vw, 4rem); line-height: 1.04; font-weight: 700; max-width: 12em; }
+.fc-hero.fc-compact h1 { font-size: clamp(2rem, 0.5rem + 4vw, 3.25rem); max-width: none; }
+.fc .fc-lead { margin-top: 24px; max-width: 34em; font-size: 18px; line-height: 1.6; color: var(--muted); }
+.fc-h2 { font-size: clamp(1.75rem, 1rem + 2vw, 2.25rem); line-height: 1.12; font-weight: 700; }
+
+/* Buttons */
+.fc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+.fc-btn { display: inline-flex; align-items: center; justify-content: space-between; gap: 40px; min-height: 44px; padding: 10px 16px; font-size: 15px; font-weight: 700; text-decoration: none; border: 1px solid var(--rule); color: var(--ink); background: transparent; }
+.fc-btn:hover { border-color: var(--ink); }
+.fc-btn [aria-hidden] { font-size: 1.25em; line-height: 1; }
+.fc-btn-primary { background: var(--red-ink); border-color: var(--red-ink); color: #fff !important; }
+.fc-btn-primary:hover { background: var(--ink); border-color: var(--ink); }
+.fc-btn-light { background: var(--paper); border-color: var(--paper); color: var(--ink) !important; }
+.fc-btn-light:hover { background: #fff; }
+
+/* Ruled list (IN / 01 / 02 / 03 / OUT) */
+.fc-flow { list-style: none; border-top: 2px solid var(--ink); }
+.fc-flow li { display: grid; grid-template-columns: 60px 1fr; padding: 18px 0 16px; border-bottom: 1px solid var(--rule); }
+.fc-flow li:last-child { border-bottom: 0; }
+.fc-label { color: var(--red-ink); font-size: 13px; font-weight: 700; letter-spacing: 0.04em; padding-top: 2px; }
+.fc-flow strong { display: block; font-weight: 600; font-size: 16px; }
+.fc-flow span.fc-sub { color: var(--muted); font-size: 14px; }
+
+/* Sections */
+.fc-section { border-top: 1px solid var(--rule); margin-top: 40px; padding-top: 56px; }
+.fc-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 48px; align-items: start; }
+.fc-split p { color: var(--muted); font-size: 16px; line-height: 1.6; }
+.fc-split p + p { margin-top: 12px; }
+.fc-split p.fc-strong-p { color: var(--ink); }
+.fc code { font-family: ui-monospace, "Noto Sans Mono", monospace; font-size: 0.85em; background: #e3e2e2; padding: 2px 6px; }
+
+/* Stage cards */
+.fc-stages { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--ink); margin-top: 28px; }
+.fc-stage { padding: 20px 24px 28px; border-left: 1px solid var(--rule); }
+.fc-stage:first-child { padding-left: 0; border-left: 0; }
+.fc-num { display: block; color: var(--red); font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+.fc-stage h3 { margin-top: 20px; font-size: 20px; font-weight: 700; }
+.fc-stage p { margin-top: 8px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+/* Definition and result tables */
+.fc-table-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--ink); margin-top: 40px; }
+.fc-table-head:first-child { margin-top: 0; }
+.fc-table-head .fc-h2 { font-size: 26px; }
+.fc-note { color: var(--muted); font-size: 13px; }
+.fc-defs > div { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.fc-defs > div:last-child { border-bottom: 0; }
+.fc-defs dt { font-weight: 600; font-size: 15px; }
+.fc-defs dd { color: var(--muted); font-size: 15px; }
+
+.fc-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.fc-table th, .fc-table td { padding: 14px 12px 14px 0; border-bottom: 1px solid var(--rule); text-align: right; font-variant-numeric: tabular-nums; }
+.fc-table th { font-size: 13px; font-weight: 600; color: var(--muted); }
+.fc-table th:first-child, .fc-table td:first-child { text-align: left; font-weight: 600; color: var(--ink); }
+.fc-table th:last-child, .fc-table td:last-child { padding-right: 0; }
+.fc-table tr:last-child td { border-bottom: 0; }
+.fc-scroll { overflow-x: auto; }
+
+/* Red call-to-action block */
+.fc-cta { margin-top: 56px; background: var(--red); color: var(--paper); padding: 56px 32px 56px; min-height: 340px; display: flex; flex-direction: column; justify-content: space-between; gap: 48px; }
+.fc-cta h2 { font-size: clamp(2rem, 1rem + 3vw, 3rem); line-height: 1.04; font-weight: 700; max-width: 11.5em; }
+.fc-cta .fc-btn { align-self: flex-start; min-width: 220px; }
+.fc-cta a:focus-visible { outline-color: var(--paper); }
+
+/* Run view: native widgets */
+.st-key-controls { border-top: 2px solid var(--ink); padding: 20px 0 24px; }
+.st-key-controls [data-testid="stWidgetLabel"] p { font-weight: 600; font-size: 15px; }
+.stButton button { font-family: var(--font); min-height: 44px; padding: 10px 20px; }
+.stButton button p { font-weight: 700; font-size: 15px; }
+.stButton button[data-testid="stBaseButton-primary"] { background: var(--red-ink); border-color: var(--red-ink); color: #fff; }
+.stButton button[data-testid="stBaseButton-primary"]:hover { background: var(--ink); border-color: var(--ink); }
+.stButton button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; box-shadow: none; }
+.fc-empty { color: var(--muted); font-size: 16px; padding: 24px 0; border-bottom: 1px solid var(--rule); }
+.fc-callout { margin-top: 8px; border-top: 2px solid var(--ink); padding-top: 16px; display: grid; grid-template-columns: 150px 1fr; gap: 16px; }
+.fc-callout p { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 60em; }
+
+@media (max-width: 760px) {
+  :root { --gutter: 16px; }
+  .fc-top-inner { height: 56px; }
+  .fc-brand { font-size: 16px; }
+  .fc-nav { gap: 16px; }
+  .fc-nav a { font-size: 14px; }
+  .fc-hero { padding: 40px 0 24px; }
+  .fc .fc-lead { font-size: 16px; }
+  .fc-actions .fc-btn { flex: 1 1 100%; }
+  .fc-section { margin-top: 32px; padding-top: 40px; }
+  .fc-split { grid-template-columns: 1fr; }
+  .fc-stages { grid-template-columns: 1fr; }
+  .fc-stage, .fc-stage:first-child { padding: 20px 0 24px; border-left: 0; }
+  .fc-stage + .fc-stage { border-top: 1px solid var(--rule); }
+  .fc-defs > div, .fc-callout { grid-template-columns: 1fr; gap: 4px; }
+  .fc-table { font-size: 14px; }
+  .fc-cta { padding: 40px 20px; min-height: 0; }
+  .fc-cta .fc-btn { align-self: stretch; }
+  .st-key-controls { flex-direction: column; align-items: stretch; }
+  .st-key-controls > * { flex: 0 0 auto !important; width: 100% !important; }
+  .st-key-controls .stButton, .st-key-controls .stButton button { width: 100%; }
+}

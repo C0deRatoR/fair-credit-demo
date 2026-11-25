@@ -1,0 +1,12 @@
+# Fair Credit design tokens for Streamlit's own widgets; layout and page styles live in style.css.
+[theme]
+base = "light"
+primaryColor = "#CC2A10"
+backgroundColor = "#F2F2F2"
+secondaryBackgroundColor = "#E6E5E5"
+textColor = "#1A1A1A"
+borderColor = "#8A8A8A"
+linkColor = "#CC2A10"
+font = "Archivo:https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap"
+baseRadius = "none"
+chartCategoricalColors = ["#EE3216", "#1A1A1A"]

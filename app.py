@@ -7,6 +7,9 @@ Run with:
         --with scikit-learn --with fairlearn streamlit run app.py
 """
 
+import logging
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 from sklearn.ensemble import GradientBoostingClassifier
@@ -18,7 +21,7 @@ from fairlearn.postprocessing import ThresholdOptimizer
 
 from demo import RANDOM_STATE, ks_stat, load_data, prep_features, reweigh
 
-st.set_page_config(page_title="Fair Credit Default Demo", page_icon="\U0001F4CA")
+st.set_page_config(page_title="Fair Credit", page_icon="\U0001F7E5", layout="wide")
 
 
 @st.cache_data
@@ -73,32 +76,162 @@ def run_pipeline(test_size: float):
     return pd.DataFrame(records).set_index("Stage"), s_test.value_counts()
 
 
-st.title("Credit Default Prediction — Fairness Pipeline Demo")
-st.caption(
-    "German Credit dataset (public proxy for micro-finance lending data) · "
-    "protected attribute: sex"
-)
 
-test_size = st.slider("Test set size", 0.2, 0.4, 0.3, 0.05)
+# Overview copy is taken word for word from the "Fair Credit app design" PDF.
+OVERVIEW_HTML = """
+<div class="fc">
+  <section class="fc-hero">
+    <p class="fc-eyebrow">Credit risk · Fairness audit</p>
+    <h1>Predict credit default&nbsp;— and show whether the model treats groups fairly.</h1>
+    <p class="fc-lead">Fair Credit trains a credit-risk model on real lending data, then applies two
+      fairness techniques in sequence. Every stage reports accuracy and fairness side by side, so you
+      can see exactly what each intervention costs and gains.</p>
+    <div class="fc-actions">
+      <a class="fc-btn fc-btn-primary" href="?view=run">Run the pipeline <span aria-hidden="true">→</span></a>
+      <a class="fc-btn" href="#how-it-works">How it works</a>
+    </div>
+  </section>
 
-if st.button("Run pipeline", type="primary"):
-    with st.spinner("Training baseline -> reweighed -> threshold-adjusted models..."):
-        results, group_sizes = run_pipeline(test_size)
+  <ol class="fc-flow">
+    <li><span class="fc-label">IN</span><div><strong>Loan applications</strong><span class="fc-sub">German Credit · 1,000 applicants</span></div></li>
+    <li><span class="fc-label">01</span><div><strong>Baseline model</strong><span class="fc-sub">Gradient boosting, no constraints</span></div></li>
+    <li><span class="fc-label">02</span><div><strong>Reweighed</strong><span class="fc-sub">Pre-processing: balance training data</span></div></li>
+    <li><span class="fc-label">03</span><div><strong>Reweighed + Threshold</strong><span class="fc-sub">Post-processing: group-aware cut-offs</span></div></li>
+    <li><span class="fc-label">OUT</span><div><strong>Accuracy + fairness report</strong><span class="fc-sub">AUC, KS, recall, parity and odds gaps</span></div></li>
+  </ol>
 
-    st.subheader("Accuracy metrics")
-    st.dataframe(results[["AUC", "KS", "Recall (default)"]], use_container_width=True)
+  <section class="fc-section" id="how-it-works">
+    <div class="fc-split">
+      <h2 class="fc-h2">Three stages, one question</h2>
+      <p>Each stage builds on the last. Comparing them shows whether a fairness technique narrows the
+        gap between groups — and what it does to predictive power.</p>
+    </div>
+    <div class="fc-stages">
+      <article class="fc-stage"><span class="fc-num">01</span><h3>Baseline</h3>
+        <p>A gradient-boosting classifier trained on the raw data. The protected attribute is removed
+          from the inputs, but bias can still leak in through correlated features.</p></article>
+      <article class="fc-stage"><span class="fc-num">02</span><h3>Reweighed</h3>
+        <p>Kamiran–Calders reweighing gives each training example a weight so that outcome and group
+          look statistically independent. Under-represented combinations count for more.</p></article>
+      <article class="fc-stage"><span class="fc-num">03</span><h3>Reweighed + Threshold</h3>
+        <p>A threshold optimizer sets a separate decision cut-off per group on top of the reweighed
+          model, targeting equalized odds — similar error rates for everyone.</p></article>
+    </div>
+  </section>
 
-    st.subheader("Fairness metrics")
-    st.dataframe(results[["Demographic Parity Diff", "Equalized Odds Diff"]], use_container_width=True)
+  <section class="fc-section">
+    <div class="fc-table-head"><h2 class="fc-h2">Accuracy</h2><span class="fc-note">higher is better</span></div>
+    <dl class="fc-defs">
+      <div><dt>AUC</dt><dd>How well the model ranks risky applicants above safe ones, from 0.5 (chance) to 1.0.</dd></div>
+      <div><dt>KS</dt><dd>The largest separation between score distributions of defaulters and non-defaulters.</dd></div>
+      <div><dt>Recall</dt><dd>Share of actual defaults the model catches.</dd></div>
+    </dl>
+    <div class="fc-table-head"><h2 class="fc-h2">Fairness</h2><span class="fc-note">closer to 0 is better</span></div>
+    <dl class="fc-defs">
+      <div><dt>Demographic parity gap</dt><dd>Difference in how often each group is flagged as high-risk, regardless of outcome.</dd></div>
+      <div><dt>Equalized odds gap</dt><dd>Largest difference between groups in true-positive or false-positive rate — are mistakes shared equally?</dd></div>
+    </dl>
+  </section>
 
-    st.bar_chart(results[["Demographic Parity Diff", "Equalized Odds Diff"]])
+  <section class="fc-section fc-split">
+    <h2 class="fc-h2">About the data</h2>
+    <div>
+      <p class="fc-strong-p">The <strong>German Credit</strong> dataset (OpenML <code>credit-g</code>) is a public
+        stand-in for micro-finance lending data. Each row is an applicant; the target is whether they
+        were rated a bad credit risk.</p>
+      <p>The protected attribute is <strong>sex</strong>, derived from the applicant's personal status.
+        With roughly 300 test rows split across two groups, fairness estimates carry real sampling
+        noise — which is why every result is reported, not just the good ones.</p>
+    </div>
+  </section>
 
-    st.caption(f"Test-set group sizes: {group_sizes.to_dict()}")
-    st.info(
-        "Fairness metrics don't necessarily shrink at every stage — with a small, "
-        "noisy test split, a fairness technique can even look worse on one metric. "
-        "That's why Slide 4 reports accuracy AND fairness together instead of "
-        "assuming the intervention worked."
+  <section class="fc-cta">
+    <h2>Accuracy and fairness, reported together.</h2>
+    <a class="fc-btn fc-btn-light" href="?view=run">Run the pipeline <span aria-hidden="true">→</span></a>
+  </section>
+</div>
+"""
+
+
+def top_bar(active: str) -> None:
+    links = "".join(
+        f'<a href="?view={view}"{" aria-current=page" if view == active else ""}>{label}</a>'
+        for view, label in (("overview", "Overview"), ("run", "Run pipeline"))
     )
-else:
-    st.write("Click **Run pipeline** to train the three models and compare metrics live.")
+    st.html(
+        '<div class="fc fc-top"><div class="fc-top-inner">'
+        '<a class="fc-brand" href="?view=overview"><span class="fc-logo" aria-hidden="true"></span>Fair Credit</a>'
+        f'<nav class="fc-nav" aria-label="Main">{links}</nav></div></div>'
+    )
+
+
+def table_html(title: str, note: str, df: pd.DataFrame) -> str:
+    table = df.reset_index().to_html(index=False, border=0, classes="fc-table", float_format="{:.3f}".format)
+    return (
+        f'<div class="fc-table-head"><h2 class="fc-h2">{title}</h2><span class="fc-note">{note}</span></div>'
+        f'<div class="fc-scroll">{table}</div>'
+    )
+
+
+def show_run() -> None:
+    st.html(
+        '<div class="fc"><section class="fc-hero fc-compact">'
+        '<p class="fc-eyebrow">Baseline · Reweighed · Reweighed + Threshold</p>'
+        "<h1>Run the pipeline</h1>"
+        '<p class="fc-lead">German Credit dataset (public proxy for micro-finance lending data) · '
+        "protected attribute: sex</p></section></div>"
+    )
+
+    with st.container(key="controls", horizontal=True, vertical_alignment="bottom", gap="medium"):
+        test_size = st.slider("Test set size", 0.2, 0.4, 0.3, 0.05)
+        clicked = st.button("Run pipeline", type="primary")
+
+    if not clicked:
+        st.html(
+            '<p class="fc fc-empty">Click <strong>Run pipeline</strong> to train the three models '
+            "and compare metrics live.</p>"
+        )
+        return
+
+    try:
+        with st.spinner("Training baseline → reweighed → threshold-adjusted models..."):
+            results, group_sizes = run_pipeline(test_size)
+    except OSError:  # URLError, HTTPError and timeouts from the first-run OpenML download
+        logging.exception("OpenML download failed")
+        st.error(
+            "Couldn't download the German Credit dataset from OpenML. "
+            "Check your internet connection and run the pipeline again."
+        )
+        return
+
+    fairness = results[["Demographic Parity Diff", "Equalized Odds Diff"]]
+    st.html(
+        '<div class="fc">'
+        + table_html("Accuracy", "higher is better", results[["AUC", "KS", "Recall (default)"]])
+        + table_html("Fairness", "closer to 0 is better", fairness)
+        + "</div>"
+    )
+    # Short legend labels so the chart legend fits at phone width.
+    st.bar_chart(fairness.set_axis(["Parity gap", "Odds gap"], axis=1), horizontal=True, stack=False)
+
+    groups = "".join(f"<div><dt>{g.capitalize()}</dt><dd>{n} applicants</dd></div>" for g, n in group_sizes.items())
+    st.html(
+        '<div class="fc">'
+        '<div class="fc-table-head"><h2 class="fc-h2">Test-set group sizes</h2>'
+        f'<span class="fc-note">n = {group_sizes.sum()}</span></div>'
+        f'<dl class="fc-defs">{groups}</dl>'
+        '<div class="fc-callout"><span class="fc-label">NOTE</span>'
+        "<p>Fairness metrics don't necessarily shrink at every stage — with a small, noisy test split, "
+        "a fairness technique can even look worse on one metric. That's why Slide 4 reports accuracy "
+        "AND fairness together instead of assuming the intervention worked.</p></div></div>"
+    )
+
+
+st.html(Path(__file__).with_name("style.css"))
+view = "run" if st.query_params.get("view") == "run" else "overview"
+top_bar(view)
+with st.container(key="page"):
+    if view == "run":
+        show_run()
+    else:
+        st.html(OVERVIEW_HTML)
