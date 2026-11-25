@@ -10,6 +10,7 @@ Run with:
 import logging
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 from sklearn.ensemble import GradientBoostingClassifier
@@ -73,7 +74,22 @@ def run_pipeline(test_size: float):
                 equalized_odds_difference(y_true, y_pred, sensitive_features=s_test), 3
             ),
         })
-    return pd.DataFrame(records).set_index("Stage"), s_test.value_counts()
+    # Per-applicant view: each test applicant ranked by the fair model's default probability.
+    ranking = pd.DataFrame({
+        "Applicant": X_test.index,
+        "Sex": s_test.values,
+        "Age": X_test["age"].values,
+        "Loan amount": X_test["credit_amount"].values,
+        "Baseline risk": base_score.round(3),
+        "Fair risk": fair_score.round(3),
+        "Flagged (final)": np.where(postproc_pred == 1, "Yes", "No"),
+        "Actual": np.where(y_test.values == 1, "Defaulted", "Repaid"),
+    }).sort_values("Fair risk", ascending=False)
+    ranking.insert(0, "Rank", range(1, len(ranking) + 1))
+    # shortcut: illustrative tier cut-offs (0.30 ≈ base default rate), tune with the business before real use.
+    ranking.insert(7, "Tier", pd.cut(ranking["Fair risk"], [0, 0.3, 0.6, 1],
+                                     labels=["Approve", "Refer", "Decline"], include_lowest=True).astype(str))
+    return pd.DataFrame(records).set_index("Stage"), s_test.value_counts(), ranking
 
 
 
@@ -195,7 +211,7 @@ def show_run() -> None:
 
     try:
         with st.spinner("Training baseline → reweighed → threshold-adjusted models..."):
-            results, group_sizes = run_pipeline(test_size)
+            results, group_sizes, ranking = run_pipeline(test_size)
     except OSError:  # URLError, HTTPError and timeouts from the first-run OpenML download
         logging.exception("OpenML download failed")
         st.error(
@@ -225,6 +241,11 @@ def show_run() -> None:
         "a fairness technique can even look worse on one metric. That's why Slide 4 reports accuracy "
         "AND fairness together instead of assuming the intervention worked.</p></div></div>"
     )
+    st.html(
+        '<div class="fc"><div class="fc-table-head"><h2 class="fc-h2">Per-applicant risk ranking</h2>'
+        '<span class="fc-note">riskiest first · approve &lt; 0.30 ≤ refer &lt; 0.60 ≤ decline</span></div></div>'
+    )
+    st.dataframe(ranking, hide_index=True, height=420)
 
 
 st.html(Path(__file__).with_name("style.css"))
