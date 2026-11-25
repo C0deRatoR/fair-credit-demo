@@ -1,3 +1,5 @@
 __pycache__/
 mlflow.db
 mlruns/
+german_credit.csv
+.~lock.*#
